@@ -134,6 +134,42 @@
   }
   .stock-toggle input{ accent-color: var(--cyan); width:14px; height:14px; }
 
+  /* ===== Category pills ===== */
+  .cat-pills{
+    max-width: 1180px; margin: 20px auto 0; padding: 0 24px;
+    display:flex; flex-wrap:wrap; gap:8px;
+  }
+  .cat-pill{
+    display:flex; align-items:center; gap:7px;
+    background: var(--surface); border:1px solid var(--line); color: var(--text-muted);
+    padding: 8px 15px; border-radius: 999px; font-size:12.5px; font-family: var(--font-body);
+    transition: border-color .15s ease, color .15s ease, background .15s ease;
+  }
+  .cat-pill .cp-icon{ font-size:12px; opacity:.9; }
+  .cat-pill span.cp-count{ font-family: var(--font-mono); font-size:10.5px; color: var(--text-dim); }
+  .cat-pill:hover{ border-color: var(--line-strong); color: var(--text); }
+  .cat-pill.active{ background: var(--cyan-dim); border-color: var(--cyan); color: var(--cyan); }
+  .cat-pill.active span.cp-count{ color: var(--cyan); }
+
+  /* ===== Category sections ===== */
+  .cat-section{ margin-bottom: 36px; }
+  .cat-section:last-child{ margin-bottom: 0; }
+  .cat-section-header{
+    display:flex; align-items:center; gap:12px; margin-bottom:16px;
+  }
+  .csh-icon{
+    width:30px; height:30px; border-radius:9px; background: var(--cyan-dim); color: var(--cyan);
+    display:flex; align-items:center; justify-content:center; font-size:14px; flex-shrink:0;
+  }
+  .csh-label{
+    font-family: var(--font-display); font-weight:700; font-size:15px; letter-spacing:.01em;
+    white-space:nowrap; text-transform: uppercase;
+  }
+  .csh-count{
+    font-family: var(--font-mono); font-size:11px; color: var(--text-dim); white-space:nowrap;
+  }
+  .csh-line{ flex:1; height:1px; background: var(--line); }
+
   /* ===== Grid ===== */
   .grid-wrap{ max-width: 1180px; margin: 28px auto 80px; padding: 0 24px; }
   .grid{
@@ -357,6 +393,8 @@
   </label>
 </div>
 
+<div class="cat-pills" id="catPills"></div>
+
 <div class="grid-wrap">
   <div id="content">
     <div class="grid" id="skeletonGrid"></div>
@@ -402,6 +440,7 @@ const hideSoldOut = document.getElementById('hideSoldOut');
 
 let allProducts = [];
 let requesterName = '';
+let activeCategory = 'all';
 
 // render skeleton placeholders immediately
 for(let i=0;i<6;i++){
@@ -428,23 +467,30 @@ function computeFinalPrice(p){
   return roundDownToThousand(base * 1.15);
 }
 
-function iconFor(p){
-  const key = (p.emoji || '').toLowerCase();
+const CATEGORY_META = {
+  ai:      { label: 'AI',      icon: '✦' },
+  capcut:  { label: 'CapCut',  icon: '✂' },
+  netflix: { label: 'Netflix', icon: '▶' },
+  office:  { label: 'Office',  icon: '▦' },
+  youtube: { label: 'YouTube', icon: '▶' },
+  other:   { label: 'Khác',    icon: '◈' }
+};
+const CATEGORY_ORDER = ['ai','capcut','netflix','office','youtube','other'];
+
+function categoryFor(p){
   const name = (p.product_name || '').toLowerCase();
-  const map = {
-    chatgpt: '✦', gpt: '✦', gemini: '◆', claude: '✺',
-    capcut: '✂', netflix: '▶', office: '▦', word: '▦', excel: '▦',
-    youtube: '▶', gmail: '✉'
-  };
-  if(map[key]) return map[key];
-  if(name.includes('capcut')) return '✂';
-  if(name.includes('netflix')) return '▶';
-  if(name.includes('office') || name.includes('word') || name.includes('excel')) return '▦';
-  if(name.includes('youtube')) return '▶';
-  if(name.includes('chatgpt') || name.includes('gpt')) return '✦';
-  if(name.includes('gemini')) return '◆';
-  if(name.includes('claude')) return '✺';
-  return '◈';
+  const emoji = (p.emoji || '').toLowerCase();
+  if(name.includes('netflix')) return 'netflix';
+  if(name.includes('capcut')) return 'capcut';
+  if(name.includes('office') || name.includes('word') || name.includes('excel') || name.includes('microsoft')) return 'office';
+  if(name.includes('youtube')) return 'youtube';
+  if(name.includes('chatgpt') || name.includes('gpt') || name.includes('gemini') || name.includes('claude') ||
+     ['chatgpt','gemini','claude'].includes(emoji)) return 'ai';
+  return 'other';
+}
+
+function iconFor(p){
+  return CATEGORY_META[categoryFor(p)].icon;
 }
 
 function buildBadges(p){
@@ -500,6 +546,42 @@ function renderCard(p, idx){
   return div;
 }
 
+function renderCatPills(){
+  const pillsEl = document.getElementById('catPills');
+  const visible = allProducts.filter(p => !p.hiddenInBotMenu);
+  const counts = {};
+  visible.forEach(p => {
+    const c = categoryFor(p);
+    counts[c] = (counts[c] || 0) + 1;
+  });
+
+  let html = `<button class="cat-pill ${activeCategory === 'all' ? 'active' : ''}" data-cat="all"><span class="cp-icon">◎</span>Tất cả <span class="cp-count">${visible.length}</span></button>`;
+  CATEGORY_ORDER.forEach(key => {
+    if(!counts[key]) return;
+    const meta = CATEGORY_META[key];
+    html += `<button class="cat-pill ${activeCategory === key ? 'active' : ''}" data-cat="${key}"><span class="cp-icon">${meta.icon}</span>${meta.label} <span class="cp-count">${counts[key]}</span></button>`;
+  });
+  pillsEl.innerHTML = html;
+}
+
+document.getElementById('catPills').addEventListener('click', (e) => {
+  const btn = e.target.closest('.cat-pill');
+  if(!btn) return;
+  activeCategory = btn.dataset.cat;
+  renderCatPills();
+  applyFiltersAndRender();
+});
+
+function sortList(list, sortVal){
+  const arr = list.slice();
+  if(sortVal === 'price-asc') arr.sort((a,b)=> computeFinalPrice(a) - computeFinalPrice(b));
+  else if(sortVal === 'price-desc') arr.sort((a,b)=> computeFinalPrice(b) - computeFinalPrice(a));
+  else if(sortVal === 'bestseller') arr.sort((a,b)=> ((b.stats&&b.stats.sold)||0) - ((a.stats&&a.stats.sold)||0));
+  else if(sortVal === 'stock') arr.sort((a,b)=> ((b.stats&&b.stats.available)||0) - ((a.stats&&a.stats.available)||0));
+  else arr.sort((a,b)=> (a.displayOrder||0) - (b.displayOrder||0));
+  return arr;
+}
+
 function applyFiltersAndRender(){
   const q = searchInput.value.trim().toLowerCase();
   const sortVal = sortSelect.value;
@@ -512,14 +594,49 @@ function applyFiltersAndRender(){
   if(hideOut){
     list = list.filter(p => (p.stats && p.stats.available) > 0);
   }
+  if(activeCategory !== 'all'){
+    list = list.filter(p => categoryFor(p) === activeCategory);
+  }
 
-  if(sortVal === 'price-asc') list.sort((a,b)=> computeFinalPrice(a) - computeFinalPrice(b));
-  else if(sortVal === 'price-desc') list.sort((a,b)=> computeFinalPrice(b) - computeFinalPrice(a));
-  else if(sortVal === 'bestseller') list.sort((a,b)=> ((b.stats&&b.stats.sold)||0) - ((a.stats&&a.stats.sold)||0));
-  else if(sortVal === 'stock') list.sort((a,b)=> ((b.stats&&b.stats.available)||0) - ((a.stats&&a.stats.available)||0));
-  else list.sort((a,b)=> (a.displayOrder||0) - (b.displayOrder||0));
+  if(activeCategory === 'all'){
+    renderGroupedGrid(list, sortVal);
+  } else {
+    renderGrid(sortList(list, sortVal));
+  }
+}
 
-  renderGrid(list);
+function renderGroupedGrid(list, sortVal){
+  contentEl.innerHTML = '';
+  if(list.length === 0){
+    contentEl.innerHTML = `
+      <div class="state-box">
+        <div class="icon">🔍</div>
+        <h3>Không tìm thấy sản phẩm</h3>
+        <p>Thử một từ khoá khác hoặc bỏ chọn "Ẩn hết hàng".</p>
+      </div>`;
+    return;
+  }
+  CATEGORY_ORDER.forEach(key => {
+    const group = list.filter(p => categoryFor(p) === key);
+    if(group.length === 0) return;
+    const sorted = sortList(group, sortVal);
+    const meta = CATEGORY_META[key];
+
+    const section = document.createElement('div');
+    section.className = 'cat-section';
+    section.innerHTML = `
+      <div class="cat-section-header">
+        <div class="csh-icon">${meta.icon}</div>
+        <div class="csh-label">${meta.label}</div>
+        <div class="csh-count">${group.length} sản phẩm</div>
+        <div class="csh-line"></div>
+      </div>
+      <div class="grid"></div>
+    `;
+    const grid = section.querySelector('.grid');
+    sorted.forEach((p, i) => grid.appendChild(renderCard(p, i)));
+    contentEl.appendChild(section);
+  });
 }
 
 function renderGrid(list){
@@ -571,6 +688,7 @@ async function loadProducts(){
 
     allProducts = data.products || [];
     reqPill.innerHTML = `<span class="dot"></span><span class="label">${allProducts.length} sản phẩm đang bán</span>`;
+    renderCatPills();
     applyFiltersAndRender();
   }catch(err){
     showError('Máy chủ API hiện không phản hồi, hoặc trình duyệt chặn yêu cầu chéo miền (CORS). Chi tiết: ' + err.message);
