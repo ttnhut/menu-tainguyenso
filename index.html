@@ -475,7 +475,6 @@ function renderCard(p, idx){
     </div>
     <div class="ticket-body">
       <div class="t-name">${p.product_name}</div>
-      <div class="t-desc">${(p.description_raw || p.description || '').replace(/[\n\r]+/g,' · ').slice(0,140)}</div>
       <div class="t-badges">${buildBadges(p)}</div>
       <div class="t-stock">
         <div class="stock-row">
