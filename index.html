@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Menu Tài Nguyên Số</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #0B1120;
+    --bg-soft: #0F1830;
+    --surface: #121B2E;
+    --surface-2: #16213A;
+    --line: rgba(255,255,255,0.09);
+    --line-strong: rgba(255,255,255,0.16);
+    --text: #EAF2FF;
+    --text-muted: #7C8AA6;
+    --text-dim: #52607C;
+    --cyan: #34E7C4;
+    --cyan-dim: rgba(52,231,196,0.14);
+    --amber: #FFB648;
+    --amber-dim: rgba(255,182,72,0.14);
+    --red: #FF6B6B;
+    --radius: 14px;
+    --font-display: 'Space Grotesk', sans-serif;
+    --font-body: 'Inter', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
+
+  *{ box-sizing: border-box; margin:0; padding:0; }
+  html{ scroll-behavior: smooth; }
+  body{
+    background: radial-gradient(ellipse 1200px 600px at 50% -10%, #16213A 0%, var(--bg) 55%);
+    color: var(--text);
+    font-family: var(--font-body);
+    min-height: 100vh;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  @media (prefers-reduced-motion: no-preference){
+    .fade-in{ animation: fadeIn .5s ease both; }
+  }
+  @keyframes fadeIn{ from{opacity:0; transform: translateY(10px);} to{opacity:1; transform:none;} }
+
+  a{ color: inherit; text-decoration: none; }
+  button{ font-family: inherit; cursor: pointer; }
+
+  /* ===== Header ===== */
+  header.top{
+    position: sticky; top:0; z-index: 40;
+    background: rgba(11,17,32,0.82);
+    backdrop-filter: blur(14px) saturate(140%);
+    border-bottom: 1px solid var(--line);
+  }
+  .top-inner{
+    max-width: 1180px; margin: 0 auto;
+    padding: 16px 24px;
+    display:flex; align-items:center; justify-content: space-between; gap:16px;
+  }
+  .brand{
+    display:flex; align-items:center; gap:12px;
+  }
+  .brand-mark{
+    width:38px; height:38px; border-radius:10px;
+    background: linear-gradient(145deg, var(--cyan), #1a8f7a);
+    display:flex; align-items:center; justify-content:center;
+    font-family: var(--font-mono); font-weight:700; color:#04140f; font-size:15px;
+    flex-shrink:0;
+    box-shadow: 0 0 0 1px rgba(52,231,196,0.35), 0 6px 18px -6px rgba(52,231,196,.5);
+  }
+  .brand-text .name{ font-family: var(--font-display); font-weight:700; font-size:17px; letter-spacing:.2px; }
+  .brand-text .tag{ font-family: var(--font-mono); font-size:11px; color: var(--text-dim); letter-spacing:.08em; text-transform:uppercase; }
+
+  .top-actions{ display:flex; align-items:center; gap:10px; }
+  .pill{
+    font-family: var(--font-mono); font-size:12px; color: var(--text-muted);
+    border:1px solid var(--line); border-radius: 999px; padding:7px 14px;
+    display:flex; align-items:center; gap:7px;
+  }
+  .pill .dot{ width:6px; height:6px; border-radius:50%; background: var(--cyan); box-shadow: 0 0 8px var(--cyan); }
+
+  /* ===== Hero / control strip ===== */
+  .hero{
+    max-width: 1180px; margin: 0 auto; padding: 42px 24px 18px;
+  }
+  .hero-eyebrow{
+    font-family: var(--font-mono); font-size:12px; color: var(--cyan);
+    letter-spacing:.14em; text-transform:uppercase; margin-bottom:14px;
+    display:flex; align-items:center; gap:10px;
+  }
+  .hero-eyebrow::before{ content:''; width:22px; height:1px; background: var(--cyan); }
+  .hero h1{
+    font-family: var(--font-display); font-weight:700;
+    font-size: clamp(28px, 4.4vw, 44px); letter-spacing:-0.02em; line-height:1.08;
+    max-width: 720px;
+  }
+  .hero p.sub{
+    margin-top:14px; color: var(--text-muted); max-width: 560px; font-size:15px;
+  }
+
+  .controls{
+    max-width: 1180px; margin: 26px auto 0; padding: 0 24px;
+    display:flex; flex-wrap:wrap; gap:12px; align-items:center;
+  }
+  .search-box{
+    flex: 1 1 260px; position:relative;
+  }
+  .search-box input{
+    width:100%; background: var(--surface); border:1px solid var(--line);
+    border-radius: 10px; padding: 12px 14px 12px 40px;
+    color: var(--text); font-size:14px; font-family: var(--font-body);
+    transition: border-color .15s ease, background .15s ease;
+  }
+  .search-box input::placeholder{ color: var(--text-dim); }
+  .search-box input:focus{ outline:none; border-color: var(--cyan); background: var(--surface-2); }
+  .search-box svg{ position:absolute; left:13px; top:50%; transform: translateY(-50%); opacity:.5; }
+
+  .sort-select{
+    background: var(--surface); border:1px solid var(--line); border-radius:10px;
+    padding: 12px 14px; color: var(--text-muted); font-size:13px; font-family: var(--font-mono);
+    appearance:none; cursor:pointer;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%237C8AA6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 14px center; padding-right: 34px;
+  }
+  .sort-select:focus{ outline:none; border-color: var(--cyan); }
+
+  .stock-toggle{
+    display:flex; align-items:center; gap:8px;
+    background: var(--surface); border:1px solid var(--line); border-radius:10px;
+    padding: 11px 14px; font-size:13px; color: var(--text-muted); font-family: var(--font-mono);
+    user-select:none;
+  }
+  .stock-toggle input{ accent-color: var(--cyan); width:14px; height:14px; }
+
+  /* ===== Grid ===== */
+  .grid-wrap{ max-width: 1180px; margin: 28px auto 80px; padding: 0 24px; }
+  .grid{
+    display:grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 18px;
+  }
+
+  /* ===== Ticket Card (signature element) ===== */
+  .ticket{
+    display:flex; background: var(--surface); border:1px solid var(--line);
+    border-radius: var(--radius); overflow:hidden; position:relative;
+    transition: border-color .18s ease, transform .18s ease, box-shadow .18s ease;
+  }
+  .ticket:hover{
+    border-color: var(--line-strong);
+    transform: translateY(-2px);
+    box-shadow: 0 14px 30px -14px rgba(0,0,0,.55);
+  }
+  .ticket.sold-out{ opacity:.5; filter: grayscale(.4); }
+
+  .ticket-stub{
+    flex: 0 0 92px;
+    background: linear-gradient(180deg, var(--surface-2), var(--bg-soft));
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:8px; padding: 16px 8px; position:relative;
+    border-right: 1px dashed var(--line-strong);
+  }
+  .ticket-stub::before, .ticket-stub::after{
+    content:''; position:absolute; width:16px; height:16px; border-radius:50%;
+    background: var(--bg); left:50%; transform: translateX(-50%);
+  }
+  .ticket-stub::before{ top:-8px; }
+  .ticket-stub::after{ bottom:-8px; }
+
+  .stub-icon{
+    width:38px; height:38px; border-radius:10px;
+    background: var(--cyan-dim); color: var(--cyan);
+    display:flex; align-items:center; justify-content:center;
+    font-size:18px;
+  }
+  .stub-no{
+    font-family: var(--font-mono); font-size:10px; color: var(--text-dim);
+    letter-spacing: .06em;
+  }
+
+  .ticket-body{
+    flex:1; padding: 16px 16px 14px; display:flex; flex-direction:column; gap:10px; min-width:0;
+  }
+
+  .t-name{
+    font-family: var(--font-display); font-weight:600; font-size:14.5px;
+    line-height:1.35; color: var(--text);
+  }
+
+  .t-desc{
+    font-size: 12.5px; color: var(--text-muted); line-height:1.5;
+    display:-webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow:hidden;
+  }
+
+  .t-badges{ display:flex; flex-wrap:wrap; gap:6px; }
+  .badge{
+    font-family: var(--font-mono); font-size:10px; letter-spacing:.03em;
+    padding: 3px 8px; border-radius: 6px; white-space:nowrap;
+  }
+  .badge.warranty{ background: var(--cyan-dim); color: var(--cyan); }
+  .badge.discount{ background: var(--amber-dim); color: var(--amber); }
+  .badge.duration{ background: rgba(255,255,255,.06); color: var(--text-muted); border:1px solid var(--line); }
+
+  .t-stock{ margin-top: 2px; }
+  .stock-row{
+    display:flex; justify-content:space-between; align-items:baseline;
+    font-family: var(--font-mono); font-size:10.5px; color: var(--text-dim); margin-bottom:5px;
+  }
+  .stock-row .avail{ color: var(--cyan); }
+  .stock-bar{
+    height:4px; border-radius:3px; background: rgba(255,255,255,.06); overflow:hidden;
+  }
+  .stock-bar > span{
+    display:block; height:100%; background: linear-gradient(90deg, var(--cyan), #1a8f7a);
+    border-radius:3px;
+  }
+
+  .t-footer{
+    margin-top: auto; padding-top: 10px; border-top: 1px dashed var(--line);
+    display:flex; align-items:flex-end; justify-content:space-between; gap:10px;
+  }
+  .price-block{ display:flex; flex-direction:column; }
+  .price-old{
+    font-family: var(--font-mono); font-size:10.5px; color: var(--text-dim);
+    text-decoration: line-through; text-decoration-color: var(--red);
+  }
+  .price-now{
+    font-family: var(--font-mono); font-weight:700; font-size:18px; color: var(--text);
+    letter-spacing: -0.01em;
+  }
+  .price-usd{ font-family: var(--font-mono); font-size:10px; color: var(--text-dim); }
+
+  .buy-btn{
+    background: var(--cyan); color: #04140f; border:none; border-radius:9px;
+    padding: 9px 14px; font-family: var(--font-display); font-weight:700; font-size:12.5px;
+    letter-spacing:.02em; transition: filter .15s ease, transform .1s ease;
+    white-space:nowrap;
+  }
+  .buy-btn:hover{ filter: brightness(1.08); }
+  .buy-btn:active{ transform: scale(.97); }
+  .buy-btn:disabled{ background: var(--surface-2); color: var(--text-dim); cursor:not-allowed; }
+
+  /* ===== States ===== */
+  .state-box{
+    max-width: 1180px; margin: 40px auto; padding: 60px 24px; text-align:center;
+  }
+  .state-box .icon{ font-size:34px; margin-bottom:14px; }
+  .state-box h3{ font-family: var(--font-display); font-size:18px; margin-bottom:8px; }
+  .state-box p{ color: var(--text-muted); font-size:13.5px; max-width:420px; margin:0 auto 18px; }
+  .retry-btn{
+    background: var(--surface); border:1px solid var(--line-strong); color: var(--text);
+    padding: 10px 20px; border-radius:9px; font-size:13px; font-family: var(--font-mono);
+  }
+  .retry-btn:hover{ border-color: var(--cyan); color: var(--cyan); }
+
+  .skeleton{
+    background: var(--surface); border:1px solid var(--line); border-radius: var(--radius);
+    height: 168px; position:relative; overflow:hidden;
+  }
+  .skeleton::after{
+    content:''; position:absolute; inset:0;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,.05), transparent);
+    animation: shimmer 1.4s infinite;
+  }
+  @keyframes shimmer{ from{ transform: translateX(-100%);} to{ transform: translateX(100%);} }
+
+  /* ===== Modal ===== */
+  .overlay{
+    position:fixed; inset:0; background: rgba(4,8,16,.7); backdrop-filter: blur(4px);
+    display:none; align-items:center; justify-content:center; z-index: 100; padding:20px;
+  }
+  .overlay.open{ display:flex; }
+  .modal{
+    background: var(--surface); border:1px solid var(--line-strong); border-radius:16px;
+    max-width: 420px; width:100%; padding: 26px; position:relative;
+  }
+  .modal .close{
+    position:absolute; top:14px; right:14px; background:none; border:none; color: var(--text-dim);
+    font-size:20px; line-height:1;
+  }
+  .modal .close:hover{ color: var(--text); }
+  .modal h3{ font-family: var(--font-display); font-size:17px; margin-bottom:10px; padding-right:20px; }
+  .modal .mp{ font-family: var(--font-mono); font-size:24px; color: var(--cyan); margin: 12px 0; }
+  .modal .steps{ font-size:13px; color: var(--text-muted); line-height:1.7; }
+  .modal .steps b{ color: var(--text); }
+  .modal .copy-row{
+    margin-top:16px; display:flex; gap:8px; background: var(--bg-soft); border:1px solid var(--line);
+    border-radius:9px; padding:10px 12px; align-items:center; justify-content:space-between;
+  }
+  .modal .copy-row code{ font-family: var(--font-mono); font-size:12.5px; color: var(--cyan); }
+  .modal .copy-row button{
+    background: var(--cyan-dim); color: var(--cyan); border:none; border-radius:6px;
+    padding: 5px 10px; font-size:11px; font-family: var(--font-mono);
+  }
+
+  footer.foot{
+    border-top: 1px solid var(--line); padding: 26px 24px; text-align:center;
+    font-family: var(--font-mono); font-size:11.5px; color: var(--text-dim);
+  }
+
+  @media (max-width: 480px){
+    .top-actions .pill span.label{ display:none; }
+    .ticket-stub{ flex-basis: 74px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="top-inner">
+    <div class="brand">
+      <div class="brand-mark">GPT</div>
+      <div class="brand-text">
+        <div class="name">Menu Tài Nguyên Số</div>
+        <div class="tag">Digital Goods Counter</div>
+      </div>
+    </div>
+    <div class="top-actions">
+      <span class="pill" id="reqPill"><span class="dot"></span><span class="label">Đang tải…</span></span>
+    </div>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="hero-eyebrow">Menu sản phẩm · Cập nhật trực tiếp</div>
+  <h1>Chọn vé, lấy hàng,<br>xài liền trong vài giây.</h1>
+  <p class="sub">Mỗi thẻ dưới đây là một "vé" sản phẩm — giá, tồn kho và bảo hành được lấy trực tiếp từ hệ thống. Bấm <b style="color:var(--text)">Mua ngay</b> để xem hướng dẫn thanh toán qua bot Telegram.</p>
+</section>
+
+<div class="controls">
+  <div class="search-box">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#7C8AA6" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+    <input type="text" id="searchInput" placeholder="Tìm sản phẩm… vd: chatgpt, gmail, apple pay">
+  </div>
+  <select class="sort-select" id="sortSelect">
+    <option value="default">Mặc định</option>
+    <option value="price-asc">Giá: thấp → cao</option>
+    <option value="price-desc">Giá: cao → thấp</option>
+    <option value="bestseller">Bán chạy nhất</option>
+    <option value="stock">Còn nhiều hàng</option>
+  </select>
+  <label class="stock-toggle">
+    <input type="checkbox" id="hideSoldOut">
+    Ẩn hết hàng
+  </label>
+</div>
+
+<div class="grid-wrap">
+  <div id="content">
+    <div class="grid" id="skeletonGrid"></div>
+  </div>
+</div>
+
+<footer class="foot">
+  DỮ LIỆU LẤY TỪ API TELEGRAM-BUYER · GIÁ NIÊM YẾT BẰNG VND · KHÔNG LƯU THÔNG TIN THANH TOÁN TRÊN TRANG NÀY
+</footer>
+
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <button class="close" id="modalClose">&times;</button>
+    <h3 id="modalName"></h3>
+    <div class="mp" id="modalPrice"></div>
+    <div class="steps">
+      Để hoàn tất đơn hàng, quay lại <b>Telegram bot</b> nơi bạn nhận menu này và gửi lệnh mua kèm mã sản phẩm bên dưới. Bot sẽ trừ ví và giao hàng tự động.
+    </div>
+    <div class="copy-row">
+      <code id="modalId"></code>
+      <button id="copyIdBtn">Sao chép mã</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const API_URL = "https://canboso.com/api/v2/telegram-buyer/products?key=tgb_452f0cdf6289c9598005047951422d66e5bafa6532ea6770";
+
+const contentEl = document.getElementById('content');
+const skeletonGrid = document.getElementById('skeletonGrid');
+const reqPill = document.getElementById('reqPill');
+const searchInput = document.getElementById('searchInput');
+const sortSelect = document.getElementById('sortSelect');
+const hideSoldOut = document.getElementById('hideSoldOut');
+
+let allProducts = [];
+let requesterName = '';
+
+// render skeleton placeholders immediately
+for(let i=0;i<6;i++){
+  const s = document.createElement('div');
+  s.className = 'skeleton';
+  skeletonGrid.appendChild(s);
+}
+
+function fmtVND(n){
+  if(n === null || n === undefined) return '—';
+  return n.toLocaleString('vi-VN') + ' ₫';
+}
+
+function iconFor(emoji){
+  const map = { chatgpt: '✦', gmail: '✉', gemini: '◆', claude: '✺' };
+  return map[emoji] || '◈';
+}
+
+function buildBadges(p){
+  const badges = [];
+  if(p.warrantyType === 'end_of_day'){
+    badges.push(`<span class="badge warranty">BH hết ngày</span>`);
+  } else if(p.warrantyDays){
+    badges.push(`<span class="badge warranty">BH ${p.warrantyDays} ngày</span>`);
+  }
+  const dur = p.marketTiming && p.marketTiming.productDuration;
+  if(dur && dur.value){
+    const unitMap = { months: 'tháng', days: 'ngày', years: 'năm' };
+    badges.push(`<span class="badge duration">${dur.value} ${unitMap[dur.unit] || dur.unit}</span>`);
+  }
+  if(p.promotionBadges && p.promotionBadges.length){
+    const best = p.promotionBadges.reduce((a,b)=> b.percent > a.percent ? b : a);
+    badges.push(`<span class="badge discount">-${best.percent}% từ ${best.minQty}c</span>`);
+  }
+  return badges.join('');
+}
+
+function renderCard(p, idx){
+  const total = (p.stats && p.stats.total) || 0;
+  const sold = (p.stats && p.stats.sold) || 0;
+  const available = (p.stats && p.stats.available) || 0;
+  const soldPct = total > 0 ? Math.min(100, Math.round((sold/total)*100)) : 0;
+  const soldOut = available <= 0;
+  const hasDiscount = p.marketSalePrice && p.marketSalePrice < p.pricing;
+
+  const div = document.createElement('div');
+  div.className = 'ticket fade-in' + (soldOut ? ' sold-out' : '');
+  div.style.animationDelay = (idx * 25) + 'ms';
+  div.innerHTML = `
+    <div class="ticket-stub">
+      <div class="stub-icon">${iconFor(p.emoji)}</div>
+      <div class="stub-no">#${String(idx+1).padStart(2,'0')}</div>
+    </div>
+    <div class="ticket-body">
+      <div class="t-name">${p.product_name}</div>
+      <div class="t-desc">${(p.description_raw || p.description || '').replace(/[\n\r]+/g,' · ').slice(0,140)}</div>
+      <div class="t-badges">${buildBadges(p)}</div>
+      <div class="t-stock">
+        <div class="stock-row">
+          <span>Đã bán ${sold.toLocaleString('vi-VN')}</span>
+          <span class="avail">${soldOut ? 'HẾT HÀNG' : `còn ${available}`}</span>
+        </div>
+        <div class="stock-bar"><span style="width:${soldPct}%"></span></div>
+      </div>
+      <div class="t-footer">
+        <div class="price-block">
+          ${hasDiscount ? `<span class="price-old">${fmtVND(p.pricing)}</span>` : ''}
+          <span class="price-now">${fmtVND(p.walletPricing || p.pricing)}</span>
+          <span class="price-usd">≈ $${p.usdPricing}</span>
+        </div>
+        <button class="buy-btn" ${soldOut ? 'disabled' : ''} data-id="${p._id}" data-name="${p.product_name.replace(/"/g,'&quot;')}" data-price="${fmtVND(p.walletPricing || p.pricing)}">
+          ${soldOut ? 'Hết hàng' : 'Mua ngay'}
+        </button>
+      </div>
+    </div>
+  `;
+  return div;
+}
+
+function applyFiltersAndRender(){
+  const q = searchInput.value.trim().toLowerCase();
+  const sortVal = sortSelect.value;
+  const hideOut = hideSoldOut.checked;
+
+  let list = allProducts.filter(p => !p.hiddenInBotMenu);
+  if(q){
+    list = list.filter(p => (p.product_name + ' ' + (p.description_raw||'')).toLowerCase().includes(q));
+  }
+  if(hideOut){
+    list = list.filter(p => (p.stats && p.stats.available) > 0);
+  }
+
+  if(sortVal === 'price-asc') list.sort((a,b)=> a.pricing - b.pricing);
+  else if(sortVal === 'price-desc') list.sort((a,b)=> b.pricing - a.pricing);
+  else if(sortVal === 'bestseller') list.sort((a,b)=> ((b.stats&&b.stats.sold)||0) - ((a.stats&&a.stats.sold)||0));
+  else if(sortVal === 'stock') list.sort((a,b)=> ((b.stats&&b.stats.available)||0) - ((a.stats&&a.stats.available)||0));
+  else list.sort((a,b)=> (a.displayOrder||0) - (b.displayOrder||0));
+
+  renderGrid(list);
+}
+
+function renderGrid(list){
+  contentEl.innerHTML = '';
+  if(list.length === 0){
+    contentEl.innerHTML = `
+      <div class="state-box">
+        <div class="icon">🔍</div>
+        <h3>Không tìm thấy sản phẩm</h3>
+        <p>Thử một từ khoá khác hoặc bỏ chọn "Ẩn hết hàng".</p>
+      </div>`;
+    return;
+  }
+  const grid = document.createElement('div');
+  grid.className = 'grid';
+  list.forEach((p, i) => grid.appendChild(renderCard(p, i)));
+  contentEl.appendChild(grid);
+}
+
+function showError(msg){
+  contentEl.innerHTML = `
+    <div class="state-box">
+      <div class="icon">⚠</div>
+      <h3>Không tải được menu sản phẩm</h3>
+      <p>${msg}</p>
+      <button class="retry-btn" id="retryBtn">Thử lại</button>
+    </div>`;
+  document.getElementById('retryBtn').addEventListener('click', loadProducts);
+  reqPill.innerHTML = `<span class="dot" style="background:var(--red);box-shadow:0 0 8px var(--red)"></span><span class="label">Lỗi kết nối</span>`;
+}
+
+async function loadProducts(){
+  reqPill.innerHTML = `<span class="dot"></span><span class="label">Đang tải…</span>`;
+  contentEl.innerHTML = '';
+  const sg = document.createElement('div');
+  sg.className = 'grid';
+  for(let i=0;i<6;i++){
+    const s = document.createElement('div');
+    s.className = 'skeleton';
+    sg.appendChild(s);
+  }
+  contentEl.appendChild(sg);
+
+  try{
+    const res = await fetch(API_URL);
+    if(!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    if(!data.success) throw new Error('API trả về success=false');
+
+    allProducts = data.products || [];
+    requesterName = (data.requester && data.requester.name) || '';
+    reqPill.innerHTML = `<span class="dot"></span><span class="label">${requesterName ? '@'+requesterName+' · ' : ''}${allProducts.length} sản phẩm</span>`;
+    applyFiltersAndRender();
+  }catch(err){
+    showError('Máy chủ API hiện không phản hồi, hoặc trình duyệt chặn yêu cầu chéo miền (CORS). Chi tiết: ' + err.message);
+  }
+}
+
+searchInput.addEventListener('input', applyFiltersAndRender);
+sortSelect.addEventListener('change', applyFiltersAndRender);
+hideSoldOut.addEventListener('change', applyFiltersAndRender);
+
+// modal
+const overlay = document.getElementById('overlay');
+const modalName = document.getElementById('modalName');
+const modalPrice = document.getElementById('modalPrice');
+const modalId = document.getElementById('modalId');
+
+contentEl.addEventListener('click', (e) => {
+  const btn = e.target.closest('.buy-btn');
+  if(!btn || btn.disabled) return;
+  modalName.textContent = btn.dataset.name;
+  modalPrice.textContent = btn.dataset.price;
+  modalId.textContent = btn.dataset.id;
+  overlay.classList.add('open');
+});
+
+document.getElementById('modalClose').addEventListener('click', () => overlay.classList.remove('open'));
+overlay.addEventListener('click', (e) => { if(e.target === overlay) overlay.classList.remove('open'); });
+
+document.getElementById('copyIdBtn').addEventListener('click', () => {
+  navigator.clipboard.writeText(modalId.textContent).then(()=>{
+    const b = document.getElementById('copyIdBtn');
+    const old = b.textContent;
+    b.textContent = 'Đã chép!';
+    setTimeout(()=> b.textContent = old, 1400);
+  });
+});
+
+loadProducts();
+</script>
+
+</body>
+</html>
