@@ -293,6 +293,17 @@
     background: var(--cyan-dim); color: var(--cyan); border:none; border-radius:6px;
     padding: 5px 10px; font-size:11px; font-family: var(--font-mono);
   }
+  .zalo-btn{
+    display:flex; align-items:center; justify-content:center; gap:8px;
+    margin-top: 16px; width:100%; background: var(--cyan); color:#04140f;
+    font-family: var(--font-display); font-weight:700; font-size:14px;
+    padding: 13px 16px; border-radius: 10px; transition: filter .15s ease, transform .1s ease;
+  }
+  .zalo-btn:hover{ filter: brightness(1.08); }
+  .zalo-btn:active{ transform: scale(.98); }
+  .zalo-fallback{
+    margin-top:10px; text-align:center; font-size:11.5px; color: var(--text-dim);
+  }
 
   footer.foot{
     border-top: 1px solid var(--line); padding: 26px 24px; text-align:center;
@@ -323,15 +334,15 @@
 </header>
 
 <section class="hero">
-  <div class="hero-eyebrow">Menu sản phẩm · Cập nhật trực tiếp</div>
-  <h1>Chọn vé, lấy hàng,<br>xài liền trong vài giây.</h1>
-  <p class="sub">Mỗi thẻ dưới đây là một "vé" sản phẩm — giá, tồn kho và bảo hành được lấy trực tiếp từ hệ thống. Bấm <b style="color:var(--text)">Mua ngay</b> để xem hướng dẫn thanh toán qua bot Telegram.</p>
+  <div class="hero-eyebrow">AI · CapCut · Netflix · Office · YouTube</div>
+  <h1>Tài khoản Premium giá tốt,<br>giao liền trong vài phút.</h1>
+  <p class="sub">Mỗi thẻ dưới đây là một sản phẩm — giá, tồn kho và bảo hành được lấy trực tiếp từ hệ thống. Bấm <b style="color:var(--text)">Mua ngay</b> để nhắn Zalo đặt hàng ngay lập tức.</p>
 </section>
 
 <div class="controls">
   <div class="search-box">
     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#7C8AA6" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
-    <input type="text" id="searchInput" placeholder="Tìm sản phẩm… vd: chatgpt, gmail, apple pay">
+    <input type="text" id="searchInput" placeholder="Tìm sản phẩm… vd: chatgpt, capcut, netflix, office, youtube">
   </div>
   <select class="sort-select" id="sortSelect">
     <option value="default">Mặc định</option>
@@ -353,7 +364,7 @@
 </div>
 
 <footer class="foot">
-  DỮ LIỆU LẤY TỪ API TELEGRAM-BUYER · GIÁ NIÊM YẾT BẰNG VND · KHÔNG LƯU THÔNG TIN THANH TOÁN TRÊN TRANG NÀY
+  GIÁ NIÊM YẾT BẰNG VND · ĐẶT HÀNG QUA ZALO 0375361252 · KHÔNG LƯU THÔNG TIN THANH TOÁN TRÊN TRANG NÀY
 </footer>
 
 <div class="overlay" id="overlay">
@@ -362,17 +373,25 @@
     <h3 id="modalName"></h3>
     <div class="mp" id="modalPrice"></div>
     <div class="steps">
-      Để hoàn tất đơn hàng, quay lại <b>Telegram bot</b> nơi bạn nhận menu này và gửi lệnh mua kèm mã sản phẩm bên dưới. Bot sẽ trừ ví và giao hàng tự động.
+      Bấm nút bên dưới để mở <b>Zalo</b> và nhắn trực tiếp cho shop qua số <b style="color:var(--cyan)">0375361252</b>. Tin nhắn đã điền sẵn tên sản phẩm — chỉ cần gửi là xong.
     </div>
     <div class="copy-row">
       <code id="modalId"></code>
-      <button id="copyIdBtn">Sao chép mã</button>
+      <button id="copyIdBtn">Sao chép</button>
     </div>
+    <a class="zalo-btn" id="zaloBtn" href="#" target="_blank" rel="noopener">Nhắn Zalo đặt hàng</a>
+    <div class="zalo-fallback">Không tự mở? Chat trực tiếp số <b style="color:var(--text)">0375361252</b> trên Zalo.</div>
   </div>
 </div>
 
 <script>
 const API_URL = "https://canboso.com/api/v2/telegram-buyer/products?key=tgb_452f0cdf6289c9598005047951422d66e5bafa6532ea6770";
+const ZALO_PHONE = "0375361252";
+
+function zaloLink(productName, priceText){
+  const msg = `Chào shop, mình muốn mua "${productName}" giá ${priceText}. Còn hàng không ạ?`;
+  return `https://zalo.me/${ZALO_PHONE}?message=${encodeURIComponent(msg)}`;
+}
 
 const contentEl = document.getElementById('content');
 const skeletonGrid = document.getElementById('skeletonGrid');
@@ -396,18 +415,36 @@ function fmtVND(n){
   return n.toLocaleString('vi-VN') + ' ₫';
 }
 
-function iconFor(emoji){
-  const map = { chatgpt: '✦', gmail: '✉', gemini: '◆', claude: '✺' };
-  return map[emoji] || '◈';
+function computeFinalPrice(p){
+  const base = p.pricing || 0;
+  const name = (p.product_name || '').toLowerCase();
+  if(name.includes('netflix')) return 65000;
+  if(base > 300000) return base + 35000;
+  if(base < 100000) return Math.round(base * 1.32);
+  return Math.round(base * 1.15);
+}
+
+function iconFor(p){
+  const key = (p.emoji || '').toLowerCase();
+  const name = (p.product_name || '').toLowerCase();
+  const map = {
+    chatgpt: '✦', gpt: '✦', gemini: '◆', claude: '✺',
+    capcut: '✂', netflix: '▶', office: '▦', word: '▦', excel: '▦',
+    youtube: '▶', gmail: '✉'
+  };
+  if(map[key]) return map[key];
+  if(name.includes('capcut')) return '✂';
+  if(name.includes('netflix')) return '▶';
+  if(name.includes('office') || name.includes('word') || name.includes('excel')) return '▦';
+  if(name.includes('youtube')) return '▶';
+  if(name.includes('chatgpt') || name.includes('gpt')) return '✦';
+  if(name.includes('gemini')) return '◆';
+  if(name.includes('claude')) return '✺';
+  return '◈';
 }
 
 function buildBadges(p){
   const badges = [];
-  if(p.warrantyType === 'end_of_day'){
-    badges.push(`<span class="badge warranty">BH hết ngày</span>`);
-  } else if(p.warrantyDays){
-    badges.push(`<span class="badge warranty">BH ${p.warrantyDays} ngày</span>`);
-  }
   const dur = p.marketTiming && p.marketTiming.productDuration;
   if(dur && dur.value){
     const unitMap = { months: 'tháng', days: 'ngày', years: 'năm' };
@@ -426,14 +463,14 @@ function renderCard(p, idx){
   const available = (p.stats && p.stats.available) || 0;
   const soldPct = total > 0 ? Math.min(100, Math.round((sold/total)*100)) : 0;
   const soldOut = available <= 0;
-  const hasDiscount = p.marketSalePrice && p.marketSalePrice < p.pricing;
+  const finalPrice = computeFinalPrice(p);
 
   const div = document.createElement('div');
   div.className = 'ticket fade-in' + (soldOut ? ' sold-out' : '');
   div.style.animationDelay = (idx * 25) + 'ms';
   div.innerHTML = `
     <div class="ticket-stub">
-      <div class="stub-icon">${iconFor(p.emoji)}</div>
+      <div class="stub-icon">${iconFor(p)}</div>
       <div class="stub-no">#${String(idx+1).padStart(2,'0')}</div>
     </div>
     <div class="ticket-body">
@@ -449,11 +486,9 @@ function renderCard(p, idx){
       </div>
       <div class="t-footer">
         <div class="price-block">
-          ${hasDiscount ? `<span class="price-old">${fmtVND(p.pricing)}</span>` : ''}
-          <span class="price-now">${fmtVND(p.walletPricing || p.pricing)}</span>
-          <span class="price-usd">≈ $${p.usdPricing}</span>
+          <span class="price-now">${fmtVND(finalPrice)}</span>
         </div>
-        <button class="buy-btn" ${soldOut ? 'disabled' : ''} data-id="${p._id}" data-name="${p.product_name.replace(/"/g,'&quot;')}" data-price="${fmtVND(p.walletPricing || p.pricing)}">
+        <button class="buy-btn" ${soldOut ? 'disabled' : ''} data-id="${p._id}" data-name="${p.product_name.replace(/"/g,'&quot;')}" data-price="${fmtVND(finalPrice)}">
           ${soldOut ? 'Hết hàng' : 'Mua ngay'}
         </button>
       </div>
@@ -475,8 +510,8 @@ function applyFiltersAndRender(){
     list = list.filter(p => (p.stats && p.stats.available) > 0);
   }
 
-  if(sortVal === 'price-asc') list.sort((a,b)=> a.pricing - b.pricing);
-  else if(sortVal === 'price-desc') list.sort((a,b)=> b.pricing - a.pricing);
+  if(sortVal === 'price-asc') list.sort((a,b)=> computeFinalPrice(a) - computeFinalPrice(b));
+  else if(sortVal === 'price-desc') list.sort((a,b)=> computeFinalPrice(b) - computeFinalPrice(a));
   else if(sortVal === 'bestseller') list.sort((a,b)=> ((b.stats&&b.stats.sold)||0) - ((a.stats&&a.stats.sold)||0));
   else if(sortVal === 'stock') list.sort((a,b)=> ((b.stats&&b.stats.available)||0) - ((a.stats&&a.stats.available)||0));
   else list.sort((a,b)=> (a.displayOrder||0) - (b.displayOrder||0));
@@ -532,8 +567,7 @@ async function loadProducts(){
     if(!data.success) throw new Error('API trả về success=false');
 
     allProducts = data.products || [];
-    requesterName = (data.requester && data.requester.name) || '';
-    reqPill.innerHTML = `<span class="dot"></span><span class="label">${requesterName ? '@'+requesterName+' · ' : ''}${allProducts.length} sản phẩm</span>`;
+    reqPill.innerHTML = `<span class="dot"></span><span class="label">${allProducts.length} sản phẩm đang bán</span>`;
     applyFiltersAndRender();
   }catch(err){
     showError('Máy chủ API hiện không phản hồi, hoặc trình duyệt chặn yêu cầu chéo miền (CORS). Chi tiết: ' + err.message);
@@ -553,9 +587,12 @@ const modalId = document.getElementById('modalId');
 contentEl.addEventListener('click', (e) => {
   const btn = e.target.closest('.buy-btn');
   if(!btn || btn.disabled) return;
-  modalName.textContent = btn.dataset.name;
-  modalPrice.textContent = btn.dataset.price;
-  modalId.textContent = btn.dataset.id;
+  const name = btn.dataset.name;
+  const price = btn.dataset.price;
+  modalName.textContent = name;
+  modalPrice.textContent = price;
+  modalId.textContent = `Mình muốn mua "${name}" giá ${price}`;
+  document.getElementById('zaloBtn').href = zaloLink(name, price);
   overlay.classList.add('open');
 });
 
