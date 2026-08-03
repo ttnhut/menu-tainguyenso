@@ -145,7 +145,7 @@
     padding: 8px 15px; border-radius: 999px; font-size:12.5px; font-family: var(--font-body);
     transition: border-color .15s ease, color .15s ease, background .15s ease;
   }
-  .cat-pill .cp-icon{ font-size:12px; opacity:.9; }
+  .cat-pill .cp-icon{ font-size:11px; opacity:.9; font-family: var(--font-mono); font-weight:700; }
   .cat-pill span.cp-count{ font-family: var(--font-mono); font-size:10.5px; color: var(--text-dim); }
   .cat-pill:hover{ border-color: var(--line-strong); color: var(--text); }
   .cat-pill.active{ background: var(--cyan-dim); border-color: var(--cyan); color: var(--cyan); }
@@ -159,7 +159,8 @@
   }
   .csh-icon{
     width:30px; height:30px; border-radius:9px; background: var(--cyan-dim); color: var(--cyan);
-    display:flex; align-items:center; justify-content:center; font-size:14px; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center; font-size:12px; flex-shrink:0;
+    font-family: var(--font-mono); font-weight:700; letter-spacing:-0.03em;
   }
   .csh-label{
     font-family: var(--font-display); font-weight:700; font-size:15px; letter-spacing:.01em;
@@ -208,7 +209,7 @@
     width:38px; height:38px; border-radius:10px;
     background: var(--cyan-dim); color: var(--cyan);
     display:flex; align-items:center; justify-content:center;
-    font-size:18px;
+    font-size:14px; font-family: var(--font-mono); font-weight:700; letter-spacing:-0.03em;
   }
   .stub-no{
     font-family: var(--font-mono); font-size:10px; color: var(--text-dim);
@@ -468,25 +469,31 @@ function computeFinalPrice(p){
   return roundDownToThousand(base * 1.15);
 }
 
-const CATEGORY_META = {
-  ai:      { label: 'AI',      icon: '✦' },
-  capcut:  { label: 'CapCut',  icon: '✂' },
-  netflix: { label: 'Netflix', icon: '▶' },
-  office:  { label: 'Office',  icon: '▦' },
-  youtube: { label: 'YouTube', icon: '▶' },
-  other:   { label: 'Khác',    icon: '◈' }
-};
-const CATEGORY_ORDER = ['ai','capcut','netflix','office','youtube','other'];
+const CATEGORY_DEFS = [
+  { key: 'netflix',   label: 'Netflix',            icon: 'N',   keywords: ['netflix'] },
+  { key: 'ai_code',   label: 'AI Code',             icon: '<>',  keywords: ['copilot','cursor','claude code','codeium','windsurf','code interpreter','replit','tabnine','codewhisperer','bolt.new','v0.dev','lovable','codex'] },
+  { key: 'ai_video',  label: 'AI Làm Video',        icon: '▶',   keywords: ['capcut','kling','runway','pika','heygen','sora','viggle','invideo','vidu','luma','higgsfield','veo','filmora'] },
+  { key: 'ai_image',  label: 'AI Làm Ảnh',          icon: '◆',   keywords: ['midjourney','leonardo','ideogram','dall-e','dalle','stable diffusion','firefly','flux','remini'] },
+  { key: 'ai_chat',   label: 'AI Chat',             icon: 'AI',  keywords: ['chatgpt','gpt','gemini','claude','deepseek','grok','poe','perplexity','meta ai'] },
+  { key: 'office',    label: 'Office & Học tập',    icon: '▦',   keywords: ['office','word','excel','powerpoint','microsoft 365','canva','grammarly','duolingo','coursera','udemy'] },
+  { key: 'music',     label: 'Âm nhạc',             icon: '♪',   keywords: ['spotify','apple music','tidal','soundcloud','nhaccuatui','zing mp3'] },
+  { key: 'youtube',   label: 'YouTube',             icon: 'YT',  keywords: ['youtube'] },
+  { key: 'streaming', label: 'Giải trí',            icon: 'TV',  keywords: ['disney','hbo','iqiyi','fptplay','vieon','prime video','hulu','wetv','apple tv'] },
+  { key: 'social',    label: 'Mạng xã hội',         icon: '@',   keywords: ['facebook','tiktok','zalo','discord','telegram','instagram'] },
+  { key: 'email',     label: 'Email & Tài khoản số', icon: '✉',  keywords: ['gmail','icloud','outlook','yahoo mail'] },
+  { key: 'other',     label: 'Khác',                icon: '◈',   keywords: [] }
+];
+const CATEGORY_META = Object.fromEntries(CATEGORY_DEFS.map(d => [d.key, d]));
+const CATEGORY_ORDER = CATEGORY_DEFS.map(d => d.key);
 
 function categoryFor(p){
   const name = (p.product_name || '').toLowerCase();
   const emoji = (p.emoji || '').toLowerCase();
-  if(name.includes('netflix') || emoji.includes('netflix')) return 'netflix';
-  if(name.includes('capcut') || emoji.includes('capcut')) return 'capcut';
-  if(name.includes('office') || name.includes('word') || name.includes('excel') || name.includes('microsoft') || emoji.includes('office')) return 'office';
-  if(name.includes('youtube') || emoji.includes('youtube')) return 'youtube';
-  if(name.includes('chatgpt') || name.includes('gpt') || name.includes('gemini') || name.includes('claude') ||
-     ['chatgpt','gemini','claude'].includes(emoji)) return 'ai';
+  const hay = name + ' ' + emoji;
+  for(const def of CATEGORY_DEFS){
+    if(def.key === 'other') continue;
+    if(def.keywords.some(kw => hay.includes(kw))) return def.key;
+  }
   return 'other';
 }
 
@@ -599,11 +606,7 @@ function applyFiltersAndRender(){
     list = list.filter(p => categoryFor(p) === activeCategory);
   }
 
-  if(activeCategory === 'all'){
-    renderGroupedGrid(list, sortVal);
-  } else {
-    renderGrid(sortList(list, sortVal));
-  }
+  renderGroupedGrid(list, sortVal);
 }
 
 function renderGroupedGrid(list, sortVal){
