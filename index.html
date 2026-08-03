@@ -239,6 +239,15 @@
   .badge.discount{ background: var(--amber-dim); color: var(--amber); }
   .badge.duration{ background: rgba(255,255,255,.06); color: var(--text-muted); border:1px solid var(--line); }
 
+  .desc-link{
+    align-self: flex-start;
+    background:none; border:none; padding:0; margin-top:-2px;
+    font-family: var(--font-mono); font-size:11px; color: var(--text-muted);
+    text-decoration: underline; text-decoration-style: dotted; text-underline-offset: 3px;
+    text-decoration-color: var(--text-dim);
+  }
+  .desc-link:hover{ color: var(--cyan); text-decoration-color: var(--cyan); }
+
   .t-stock{ margin-top: 2px; }
   .stock-row{
     display:flex; justify-content:space-between; align-items:baseline;
@@ -423,6 +432,14 @@
   </div>
 </div>
 
+<div class="overlay" id="descOverlay">
+  <div class="modal">
+    <button class="close" id="descModalClose">&times;</button>
+    <h3 id="descModalName"></h3>
+    <div class="steps" id="descModalBody" style="white-space:pre-wrap; max-height:50vh; overflow-y:auto;"></div>
+  </div>
+</div>
+
 <script>
 const API_URL = "https://canboso.com/api/v2/telegram-buyer/products?key=tgb_452f0cdf6289c9598005047951422d66e5bafa6532ea6770";
 const ZALO_PHONE = "0375361252";
@@ -537,6 +554,7 @@ function renderCard(p, idx){
     <div class="ticket-body">
       <div class="t-name">${p.product_name}</div>
       <div class="t-badges">${buildBadges(p)}</div>
+      <button class="desc-link" data-id="${p._id}">Xem mô tả</button>
       <div class="t-stock">
         <div class="stock-row">
           <span>Đã bán ${sold.toLocaleString('vi-VN')}</span>
@@ -713,6 +731,15 @@ const modalPrice = document.getElementById('modalPrice');
 const modalId = document.getElementById('modalId');
 
 contentEl.addEventListener('click', (e) => {
+  const descBtn = e.target.closest('.desc-link');
+  if(descBtn){
+    const product = allProducts.find(p => p._id === descBtn.dataset.id);
+    if(!product) return;
+    document.getElementById('descModalName').textContent = product.product_name;
+    document.getElementById('descModalBody').textContent = product.description_raw || product.description || 'Chưa có mô tả cho sản phẩm này.';
+    document.getElementById('descOverlay').classList.add('open');
+    return;
+  }
   const btn = e.target.closest('.buy-btn');
   if(!btn || btn.disabled) return;
   const name = btn.dataset.name;
@@ -723,6 +750,10 @@ contentEl.addEventListener('click', (e) => {
   document.getElementById('zaloBtn').href = zaloLink(name, price);
   overlay.classList.add('open');
 });
+
+const descOverlay = document.getElementById('descOverlay');
+document.getElementById('descModalClose').addEventListener('click', () => descOverlay.classList.remove('open'));
+descOverlay.addEventListener('click', (e) => { if(e.target === descOverlay) descOverlay.classList.remove('open'); });
 
 document.getElementById('modalClose').addEventListener('click', () => overlay.classList.remove('open'));
 overlay.addEventListener('click', (e) => { if(e.target === overlay) overlay.classList.remove('open'); });
