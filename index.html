@@ -490,7 +490,7 @@ const CATEGORY_DEFS = [
   { key: 'netflix',   label: 'Netflix',            icon: 'N',   keywords: ['netflix'] },
   { key: 'capcut',    label: 'CapCut',              icon: 'CC',  keywords: ['capcut'] },
   { key: 'ai_code',   label: 'AI Code',             icon: '<>',  keywords: ['copilot','cursor','claude code','codeium','windsurf','code interpreter','replit','tabnine','codewhisperer','bolt.new','v0.dev','lovable','codex'] },
-  { key: 'ai_video',  label: 'AI Làm Video',        icon: '▶',   keywords: ['kling','runway','pika','heygen','sora','viggle','invideo','vidu','luma','higgsfield','veo','filmora','beeble'] },
+  { key: 'ai_video',  label: 'AI Làm Video',        icon: '▶',   keywords: ['kling','runway','pika','heygen','sora','viggle','invideo','vidu','luma','higgsfield','veo','filmora','beeble','leonardo'] },
   { key: 'ai_audio',  label: 'AI Âm thanh',         icon: '♬',   keywords: ['elevenlabs','suno','udio','murf','play.ht','descript','voice ai'] },
   { key: 'ai_image',  label: 'AI Làm Ảnh',          icon: '◆',   keywords: ['midjourney','leonardo','ideogram','dall-e','dalle','stable diffusion','firefly','flux','remini'] },
   { key: 'design',    label: 'Thiết kế',            icon: '✎',   keywords: ['figma','adobe','photoshop','illustrator','premiere','lightroom','after effects','canva'] },
@@ -507,19 +507,18 @@ const CATEGORY_DEFS = [
 const CATEGORY_META = Object.fromEntries(CATEGORY_DEFS.map(d => [d.key, d]));
 const CATEGORY_ORDER = CATEGORY_DEFS.map(d => d.key);
 
-function categoryFor(p){
+function categoriesFor(p){
   const name = (p.product_name || '').toLowerCase();
   const emoji = (p.emoji || '').toLowerCase();
   const hay = name + ' ' + emoji;
-  for(const def of CATEGORY_DEFS){
-    if(def.key === 'other') continue;
-    if(def.keywords.some(kw => hay.includes(kw))) return def.key;
-  }
-  return 'other';
+  const matches = CATEGORY_DEFS
+    .filter(def => def.key !== 'other' && def.keywords.some(kw => hay.includes(kw)))
+    .map(def => def.key);
+  return matches.length ? matches : ['other'];
 }
 
 function iconFor(p){
-  return CATEGORY_META[categoryFor(p)].icon;
+  return CATEGORY_META[categoriesFor(p)[0]].icon;
 }
 
 function buildBadges(p){
@@ -581,8 +580,8 @@ function renderCatPills(){
   const visible = allProducts.filter(p => !p.hiddenInBotMenu);
   const counts = {};
   visible.forEach(p => {
-    const c = categoryFor(p);
-    counts[c] = (counts[c] || 0) + 1;
+    const cats = categoriesFor(p);
+    cats.forEach(c => { counts[c] = (counts[c] || 0) + 1; });
   });
 
   let html = `<button class="cat-pill ${activeCategory === 'all' ? 'active' : ''}" data-cat="all"><span class="cp-icon">◎</span>Tất cả <span class="cp-count">${visible.length}</span></button>`;
@@ -625,7 +624,7 @@ function applyFiltersAndRender(){
     list = list.filter(p => (p.stats && p.stats.available) > 0);
   }
   if(activeCategory !== 'all'){
-    list = list.filter(p => categoryFor(p) === activeCategory);
+    list = list.filter(p => categoriesFor(p).includes(activeCategory));
   }
 
   renderGroupedGrid(list, sortVal);
@@ -643,7 +642,7 @@ function renderGroupedGrid(list, sortVal){
     return;
   }
   CATEGORY_ORDER.forEach(key => {
-    const group = list.filter(p => categoryFor(p) === key);
+    const group = list.filter(p => categoriesFor(p).includes(key));
     if(group.length === 0) return;
     const sorted = sortList(group, sortVal);
     const meta = CATEGORY_META[key];
