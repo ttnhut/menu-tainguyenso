@@ -81,6 +81,13 @@
   }
   .pill .dot{ width:6px; height:6px; border-radius:50%; background: var(--cyan); box-shadow: 0 0 8px var(--cyan); }
 
+  .contact-link{
+    font-family: var(--font-mono); font-size:12px; color: var(--text-muted);
+    border:1px solid var(--line); border-radius: 999px; padding:7px 14px;
+    transition: border-color .15s ease, color .15s ease;
+  }
+  .contact-link:hover{ border-color: var(--cyan); color: var(--cyan); }
+
   /* ===== Hero / control strip ===== */
   .hero{
     max-width: 1180px; margin: 0 auto; padding: 42px 24px 18px;
@@ -347,6 +354,13 @@
   }
   .zalo-btn:hover{ filter: brightness(1.08); }
   .zalo-btn:active{ transform: scale(.98); }
+  .fb-btn{
+    display:flex; align-items:center; justify-content:center;
+    margin-top: 10px; width:100%; background: transparent; color: var(--text-muted);
+    border: 1px solid var(--line); font-family: var(--font-body); font-size:13px;
+    padding: 11px 16px; border-radius: 10px; transition: border-color .15s ease, color .15s ease;
+  }
+  .fb-btn:hover{ border-color: var(--cyan); color: var(--cyan); }
   .zalo-fallback{
     margin-top:10px; text-align:center; font-size:11.5px; color: var(--text-dim);
   }
@@ -374,6 +388,8 @@
       </div>
     </div>
     <div class="top-actions">
+      <a class="contact-link" href="https://zalo.me/0375361252" target="_blank" rel="noopener">Zalo</a>
+      <a class="contact-link" href="https://www.facebook.com/share/1aoE2De1Ub/" target="_blank" rel="noopener">Facebook</a>
       <span class="pill" id="reqPill"><span class="dot"></span><span class="label">Đang tải…</span></span>
     </div>
   </div>
@@ -412,7 +428,7 @@
 </div>
 
 <footer class="foot">
-  GIÁ NIÊM YẾT BẰNG VND · ĐẶT HÀNG QUA ZALO 0375361252 · KHÔNG LƯU THÔNG TIN THANH TOÁN TRÊN TRANG NÀY
+  GIÁ NIÊM YẾT BẰNG VND · ĐẶT HÀNG QUA ZALO 0375361252 HOẶC FACEBOOK · KHÔNG LƯU THÔNG TIN THANH TOÁN TRÊN TRANG NÀY
 </footer>
 
 <div class="overlay" id="overlay">
@@ -428,6 +444,7 @@
       <button id="copyIdBtn">Sao chép</button>
     </div>
     <a class="zalo-btn" id="zaloBtn" href="#" target="_blank" rel="noopener">Nhắn Zalo đặt hàng</a>
+    <a class="fb-btn" href="https://www.facebook.com/share/1aoE2De1Ub/" target="_blank" rel="noopener">Hoặc nhắn qua Facebook</a>
     <div class="zalo-fallback">Không tự mở? Chat trực tiếp số <b style="color:var(--text)">0375361252</b> trên Zalo.</div>
   </div>
 </div>
@@ -480,7 +497,7 @@ function computeFinalPrice(p){
   const base = p.pricing || 0;
   const name = (p.product_name || '').toLowerCase();
   if(name.includes('netflix')) return 65000;
-  if(name.includes('capcut') && name.includes('30')) return 79000;
+  if(name.includes('capcut') && (name.includes('30') || name.includes('1 tháng') || name.includes('1thang') || name.includes('1th'))) return 79000;
   if(base > 1000000) return roundDownToThousand(base + 99000);
   if(base > 300000) return roundDownToThousand(base + 35000);
   if(base < 100000) return roundDownToThousand(base * 1.32);
@@ -491,9 +508,9 @@ const CATEGORY_DEFS = [
   { key: 'netflix',   label: 'Netflix',            icon: 'N',   keywords: ['netflix'] },
   { key: 'capcut',    label: 'CapCut',              icon: 'CC',  keywords: ['capcut'] },
   { key: 'ai_code',   label: 'AI Code',             icon: '<>',  keywords: ['copilot','cursor','claude code','codeium','windsurf','code interpreter','replit','tabnine','codewhisperer','bolt.new','v0.dev','lovable','codex'] },
-  { key: 'ai_video',  label: 'AI Làm Video',        icon: '▶',   keywords: ['kling','runway','pika','heygen','sora','viggle','invideo','vidu','luma','higgsfield','veo','filmora','beeble','leonardo'] },
+  { key: 'ai_video',  label: 'AI Làm Video',        icon: '▶',   keywords: ['kling','runway','pika','heygen','sora','viggle','invideo','vidu','luma','higgsfield','veo','filmora','beeble','leonardo','krea'] },
   { key: 'ai_audio',  label: 'AI Âm thanh',         icon: '♬',   keywords: ['elevenlabs','suno','udio','murf','play.ht','descript','voice ai'] },
-  { key: 'ai_image',  label: 'AI Làm Ảnh',          icon: '◆',   keywords: ['midjourney','leonardo','ideogram','dall-e','dalle','stable diffusion','firefly','flux','remini'] },
+  { key: 'ai_image',  label: 'AI Làm Ảnh',          icon: '◆',   keywords: ['midjourney','leonardo','ideogram','dall-e','dalle','stable diffusion','firefly','flux','remini','krea'] },
   { key: 'design',    label: 'Thiết kế',            icon: '✎',   keywords: ['figma','adobe','photoshop','illustrator','premiere','lightroom','after effects','canva'] },
   { key: 'ai_chat',   label: 'AI Chat',             icon: 'AI',  keywords: ['chatgpt','gpt','gemini','claude','deepseek','grok','poe','perplexity','meta ai','manus'] },
   { key: 'office',    label: 'Office & Học tập',    icon: '▦',   keywords: ['office','word','excel','powerpoint','microsoft 365','notion','grammarly','duolingo','coursera','udemy'] },
