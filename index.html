@@ -496,10 +496,7 @@ function roundDownToThousand(n){
 function computeFinalPrice(p){
   const base = p.pricing || 0;
   const name = (p.product_name || '').toLowerCase();
-  if(name.includes('netflix')){
-    if(name.includes('1 tháng') || name.includes('1thang') || name.includes('1th') || name.includes('30')) return 77000;
-    return 65000;
-  }
+  if(name.includes('netflix')) return 65000;
   if(name.includes('capcut') && (name.includes('30') || name.includes('1 tháng') || name.includes('1thang') || name.includes('1th'))) return 87000;
   if(name.includes('capcut') && (name.includes('7 ngày') || name.includes('7ngay') || name.includes('7 day') || name.includes('7day') || name.includes('7d'))) return 17000;
   if(base > 1000000) return roundDownToThousand(base + 99000);
