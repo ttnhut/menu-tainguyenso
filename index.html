@@ -578,7 +578,7 @@ function renderCard(p, idx){
       <div class="stub-no">#${String(idx+1).padStart(2,'0')}</div>
     </div>
     <div class="ticket-body">
-      <div class="t-name">${p.product_name}</div>
+      <div class="t-name">${p.product_name || 'Sản phẩm chưa đặt tên'}</div>
       <div class="t-badges">${buildBadges(p)}</div>
       <button class="desc-link" data-id="${p._id}">Xem mô tả</button>
       <div class="t-stock">
@@ -592,7 +592,7 @@ function renderCard(p, idx){
         <div class="price-block">
           <span class="price-now">${fmtVND(finalPrice)}</span>
         </div>
-        <button class="buy-btn" ${soldOut ? 'disabled' : ''} data-id="${p._id}" data-name="${p.product_name.replace(/"/g,'&quot;')}" data-price="${fmtVND(finalPrice)}">
+        <button class="buy-btn" ${soldOut ? 'disabled' : ''} data-id="${p._id}" data-name="${(p.product_name || '').replace(/"/g,'&quot;')}" data-price="${fmtVND(finalPrice)}">
           ${soldOut ? 'Hết hàng' : 'Mua ngay'}
         </button>
       </div>
@@ -644,7 +644,7 @@ function applyFiltersAndRender(){
 
   let list = allProducts.filter(p => !p.hiddenInBotMenu);
   if(q){
-    list = list.filter(p => (p.product_name + ' ' + (p.description_raw||'')).toLowerCase().includes(q));
+    list = list.filter(p => ((p.product_name || '') + ' ' + (p.description_raw||'')).toLowerCase().includes(q));
   }
   if(hideOut){
     list = list.filter(p => (p.stats && p.stats.available) > 0);
@@ -761,7 +761,7 @@ contentEl.addEventListener('click', (e) => {
   if(descBtn){
     const product = allProducts.find(p => p._id === descBtn.dataset.id);
     if(!product) return;
-    document.getElementById('descModalName').textContent = product.product_name;
+    document.getElementById('descModalName').textContent = product.product_name || 'Sản phẩm chưa đặt tên';
     document.getElementById('descModalBody').textContent = product.description_raw || product.description || 'Chưa có mô tả cho sản phẩm này.';
     document.getElementById('descOverlay').classList.add('open');
     return;
