@@ -500,6 +500,12 @@ function computeFinalPrice(p){
     if(name.includes('5 slot') || name.includes('5slot')) return 120000;
     return 65000;
   }
+  if(name.includes('capcut')){
+    if(name.includes('1 năm') || name.includes('12 tháng') || name.includes('12thang') || name.includes('1nam')) return 650000;
+    if(name.includes('6 tháng') || name.includes('6thang') || name.includes('6th')) return 350000;
+    if(name.includes('3 tháng') || name.includes('3thang') || name.includes('3th')) return 180000;
+    if(name.includes('1 tháng') || name.includes('1thang') || name.includes('1th') || name.includes('30')) return 69000;
+  }
   if(base >= 1000000) return roundDownToThousand(base * 1.1);
   if(base > 500000) return roundDownToThousand(base + 50000);
   if(base > 100000) return roundDownToThousand(base + 39000);
