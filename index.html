@@ -500,18 +500,32 @@ function computeFinalPrice(p){
     if(name.includes('5 slot') || name.includes('5slot')) return 120000;
     return 65000;
   }
-  if(name.includes('capcut')){
+  if(name.includes('capcut') && !name.includes('chính chủ')){
     if(name.includes('1 năm') || name.includes('12 tháng') || name.includes('12thang') || name.includes('1nam')) return 670000;
     if(name.includes('6 tháng') || name.includes('6thang') || name.includes('6th')) return 370000;
     if(name.includes('3 tháng') || name.includes('3thang') || name.includes('3th')) return 215000;
-    if(name.includes('1 tháng') || name.includes('1thang') || name.includes('1th') || name.includes('30')) return 79000;
+    if(name.includes('1 tháng') || name.includes('1thang') || name.includes('1th') || name.includes('30')) return 65000;
   }
+  if(name.includes('chính chủ')) return base;
   if(base >= 1000000) return roundDownToThousand(base * 1.1);
   if(base > 500000) return roundDownToThousand(base + 50000);
   if(base > 100000) return roundDownToThousand(base + 39000);
   if(base < 100000) return roundDownToThousand(base * 1.32);
   return roundDownToThousand(base * 1.15);
 }
+
+const MANUAL_PRODUCTS = [
+  {
+    productId: 'manual-capcut-chinhchu-1th',
+    name: 'CapCut Pro Chính Chủ 1 tháng',
+    description: '• Tài khoản CapCut Pro cá nhân cấp sẵn, không phải gói Pro Team.\n• Thời hạn sử dụng: 1 tháng\n• Đăng nhập và sử dụng được trên điện thoại và máy tính.\n• Tối đa 2 thiết bị: 01 điện thoại và 01 máy tính.\n• Tài khoản có thể tồn tại phiên đăng nhập được quản lý trước đó; khách hàng chỉ cần sử dụng đúng thiết bị và không can thiệp các phiên khác.\n• Không đổi email, mật khẩu hoặc thông tin tài khoản.\n• Không đăng xuất thiết bị khác, không chia sẻ tài khoản cho người khác.\n• Không đăng nhập vượt quá số lượng thiết bị quy định.\n• Bảo hành lỗi mất Pro trong suốt thời hạn sản phẩm nếu khách hàng tuân thủ đúng hướng dẫn.\n\n⚠️ Việc đăng nhập quá nhiều thiết bị, tự ý thay đổi thông tin hoặc can thiệp vào tài khoản có thể làm mất quyền lợi bảo hành.',
+    emoji: 'capcut',
+    productType: 'upgrade_account',
+    price: { amount: 80000, currency: 'VND', text: '80.000 ₫' },
+    availability: { available: 10, sold: 0 },
+    promotions: []
+  }
+];
 
 const CATEGORY_DEFS = [
   { key: 'netflix',   label: 'Netflix',            icon: 'N',   keywords: ['netflix'] },
@@ -731,7 +745,7 @@ async function loadProducts(){
     const data = await res.json();
     if(!data.success) throw new Error('API trả về success=false');
 
-    allProducts = data.products || [];
+    allProducts = (data.products || []).concat(MANUAL_PRODUCTS);
     reqPill.innerHTML = `<span class="dot"></span><span class="label">${allProducts.length} sản phẩm đang bán</span>`;
     renderCatPills();
     applyFiltersAndRender();
